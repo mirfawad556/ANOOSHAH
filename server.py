@@ -3,7 +3,7 @@ import json
 import base64
 import time
 import subprocess
-from http.server import SimpleHTTPRequestHandler, HTTPServer
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
 PORT = 8000
@@ -110,7 +110,7 @@ class VaultServerHandler(SimpleHTTPRequestHandler):
 
 def run_server():
     os.chdir(BASE_DIR)
-    httpd = HTTPServer(('0.0.0.0', PORT), VaultServerHandler)
+    httpd = ThreadingHTTPServer(('0.0.0.0', PORT), VaultServerHandler)
     print(f"Server running at http://localhost:{PORT}")
     httpd.serve_forever()
 
