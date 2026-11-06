@@ -14,12 +14,40 @@ let currentFilter = 'all';
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     await initDB();
+    await syncFromMemoriesJson();
     initGalleryUI();
     await renderGallery();
   } catch (err) {
     console.error('Gallery initialization error:', err);
   }
 });
+
+// Load memories from memories.json (for GitHub Pages and shared repository)
+async function syncFromMemoriesJson() {
+  try {
+    const res = await fetch('memories.json?t=' + Date.now());
+    if (res.ok) {
+      const jsonMemories = await res.json();
+      const existing = await getAllMemoriesFromDB();
+      const existingImages = new Set(existing.map((m) => m.image));
+
+      for (const item of jsonMemories) {
+        if (!existingImages.has(item.image)) {
+          await addMemoryToDB({
+            image: item.image,
+            category: item.category,
+            datetime: item.datetime,
+            caption: item.caption,
+            createdAt: item.createdAt || Date.now()
+          });
+          existingImages.add(item.image);
+        }
+      }
+    }
+  } catch (err) {
+    console.log('memories.json sync note:', err);
+  }
+}
 
 /* =========================================================
    1. INDEXEDDB SETUP (High capacity local storage)
@@ -318,6 +346,20 @@ function initGalleryUI() {
               caption: finalCaption,
               createdAt: Date.now() + i
             });
+
+            // If local server is running, save permanently to project files & memories.json
+            try {
+              fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  image: event.target.result,
+                  category: category,
+                  datetime: fileDate,
+                  caption: finalCaption
+                })
+              }).catch(() => {});
+            } catch (e) {}
           } catch (err) {
             console.error('Error saving image:', file.name, err);
           }
