@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anooshah & Fawad — Secret Vault Gallery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="gallery.css">
+</head>
+<body class="gallery-page">
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow orb-1"></div>
+  <div class="ambient-glow orb-2"></div>
+  <div class="ambient-glow orb-3"></div>
+  <canvas id="circuit-canvas"></canvas>
+  <canvas id="hearts-canvas"></canvas>
+
+  <div class="gallery-container">
+    <!-- Top Navigation Bar -->
+    <header class="gallery-topbar">
+      <a href="index.html" class="back-home-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span>Back to Space</span>
+      </a>
+
+      <div class="gallery-title-box">
+        <span class="gallery-pretitle">ENCRYPTED MEMORY VAULT</span>
+        <h1 class="gallery-main-title">SECRET GALLERY</h1>
+        <p class="gallery-subtitle">— Captured Moments of Her & Us —</p>
+      </div>
+
+      <!-- Action: Add New Photo -->
+      <button class="glow-pill-btn add-photo-header-btn" id="btn-open-upload-modal">
+        <span class="pill-icon">📸</span>
+        <span>Add New Memory</span>
+      </button>
+    </header>
+
+    <!-- TWO MAIN CATEGORY TILES: "HER" and "US" -->
+    <section class="tiles-section">
+      <!-- Tile 1: HER -->
+      <div class="category-tile active" id="tile-her" data-category="her">
+        <div class="tile-glow-border"></div>
+        <div class="tile-icon-badge">👑</div>
+        <div class="tile-details">
+          <h2 class="tile-name">HER</h2>
+          <p class="tile-tagline">Solo portraits of the most beautiful soul</p>
+          <span class="tile-count" id="count-her">0 Moments</span>
+        </div>
+        <button class="tile-add-btn" id="btn-add-her" title="Add photo of Anooshah">
+          <span>+ Add Photo</span>
+        </button>
+        <div class="tile-active-indicator"></div>
+      </div>
+
+      <!-- Tile 2: US -->
+      <div class="category-tile" id="tile-us" data-category="us">
+        <div class="tile-glow-border"></div>
+        <div class="tile-icon-badge">💑</div>
+        <div class="tile-details">
+          <h2 class="tile-name">US</h2>
+          <p class="tile-tagline">Our story, laughter, and forever memories</p>
+          <span class="tile-count" id="count-us">0 Moments</span>
+        </div>
+        <button class="tile-add-btn" id="btn-add-us" title="Add photo of Us together">
+          <span>+ Add Photo</span>
+        </button>
+        <div class="tile-active-indicator"></div>
+      </div>
+    </section>
+
+    <!-- Filter Pills (All / Her / Us) -->
+    <div class="filter-controls">
+      <span class="filter-label">Filter View:</span>
+      <button class="filter-pill active" data-filter="all">All Memories</button>
+      <button class="filter-pill" data-filter="her">Her 💖</button>
+      <button class="filter-pill" data-filter="us">Us 💑</button>
+    </div>
+
+    <!-- PHOTOS GRID DISPLAY -->
+    <main class="photos-grid" id="photos-grid">
+      <!-- Dynamic Photo Cards will be injected here via IndexedDB -->
+    </main>
+
+    <!-- Empty State Display -->
+    <div class="empty-state" id="empty-state" style="display: none;">
+      <div class="empty-icon">📷</div>
+      <h3>No photos in this vault yet</h3>
+      <p>Click "Add New Memory" above to upload a special photo with date & time!</p>
+    </div>
+  </div>
+
+  <!-- UPLOAD MODAL -->
+  <div class="modal-backdrop" id="upload-modal">
+    <div class="modal-dialog upload-dialog">
+      <button class="modal-close" id="close-upload-modal">&times;</button>
+      <div class="modal-header">
+        <span class="modal-tag">MEMORY VAULT ENTRY</span>
+        <h2 class="modal-title">Upload a Memory</h2>
+        <div class="modal-divider"></div>
+      </div>
+
+      <form id="upload-form" class="upload-form">
+        <!-- Choose Tile Category -->
+        <div class="form-group">
+          <label class="form-label">Select Vault Tile:</label>
+          <div class="category-radio-group">
+            <label class="radio-card">
+              <input type="radio" name="photo-category" value="her" checked>
+              <div class="radio-content">
+                <span class="radio-icon">👑</span>
+                <span class="radio-text">HER (Solo)</span>
+              </div>
+            </label>
+            <label class="radio-card">
+              <input type="radio" name="photo-category" value="us">
+              <div class="radio-content">
+                <span class="radio-icon">💑</span>
+                <span class="radio-text">US (Together)</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Image / Folder Input -->
+        <div class="form-group">
+          <label class="form-label">Upload Mode:</label>
+          <div class="upload-mode-toggle">
+            <button type="button" class="mode-pill-btn active" id="btn-mode-files">
+              <span>🖼️ Multiple Photos</span>
+            </button>
+            <button type="button" class="mode-pill-btn" id="btn-mode-folder">
+              <span>📁 Whole Folder</span>
+            </button>
+          </div>
+
+          <div class="drop-zone" id="drop-zone">
+            <!-- Files Input (Multiple allowed) -->
+            <input type="file" id="file-input" accept="image/*" multiple>
+            <!-- Folder Input (Whole directory allowed) -->
+            <input type="file" id="folder-input" webkitdirectory directory multiple style="display: none;">
+            
+            <div class="drop-zone-content">
+              <span class="drop-icon" id="drop-icon">📁</span>
+              <p class="drop-text" id="drop-filename">Click or Drag & Drop photos or folder here</p>
+              <span class="drop-hint" id="drop-hint">Select individual photos, multiple files (Ctrl+A), or a whole folder!</span>
+            </div>
+          </div>
+
+          <!-- Selected files count & preview summary -->
+          <div class="files-selected-pill" id="selected-summary" style="display: none;">
+            <span class="summary-icon">✨</span>
+            <span id="summary-text">0 photos selected</span>
+          </div>
+        </div>
+
+        <!-- Date & Time Picker -->
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label" for="photo-datetime">Default Date & Time:</label>
+            <input type="datetime-local" id="photo-datetime" class="cyber-input">
+            <span class="field-subnote">💡 Original photo date & time from your camera/files will be automatically preserved!</span>
+          </div>
+        </div>
+
+        <!-- Caption / Memory Note -->
+        <div class="form-group">
+          <label class="form-label" for="photo-caption">Special Note / Caption (Optional):</label>
+          <input type="text" id="photo-caption" class="cyber-input" placeholder="e.g. Unforgettable smiles, late-night memories..." autocomplete="off">
+        </div>
+
+        <!-- Batch Upload Progress Indicator -->
+        <div class="upload-progress-container" id="upload-progress" style="display: none;">
+          <div class="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <span class="progress-status" id="progress-status">Uploading memories to vault...</span>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="glow-pill-btn" id="btn-save-photo">
+            <span id="save-btn-text">Save to Vault 💖</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX MODAL (ENLARGE PHOTO) -->
+  <div class="modal-backdrop lightbox-backdrop" id="lightbox-modal">
+    <div class="lightbox-dialog">
+      <button class="modal-close lightbox-close" id="close-lightbox">&times;</button>
+      <img id="lightbox-img" src="" alt="Enlarged view">
+      <div class="lightbox-meta">
+        <span class="lightbox-badge" id="lightbox-badge">HER</span>
+        <h3 class="lightbox-caption" id="lightbox-caption">Caption</h3>
+        <p class="lightbox-time" id="lightbox-time">Date & Time</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="script.js"></script>
+  <script src="gallery.js"></script>
+</body>
+</html>
